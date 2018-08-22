@@ -47,7 +47,7 @@ def rank_by_semantic_relevance(query, list_of_dictionaries):
 
     w = [0.5, 0.5]  # weighting between title and abstract content
 
-    query = preprocess(query)  # to be consitent with ft training
+    query = preprocess(query)  # to be consistent with ft training
 
     titles = [preprocess(item['title']) for item in list_of_dictionaries]
     title_similarities = np.array([similarity(query, title) for title in titles])

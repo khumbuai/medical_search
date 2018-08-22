@@ -69,8 +69,6 @@ def search_ncbi(query, autocorrect=False, db='pubmed', reldate=365, max_results=
     search_results = Entrez.read(handler)
     results_as_text = []
 
-    print(search_results)
-
     # Download in batches, since url may break if max_results is large.
     batch_size = 25
     count = min(max_results, int(search_results["Count"]))
