@@ -1,9 +1,4 @@
 # medical_search
 Semantic search for medical information
 
-# folder structure
-
-- models
-    - ft
-
-
+http://biopython.org/DIST/docs/tutorial/Tutorial.pdf
