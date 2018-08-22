@@ -21,19 +21,24 @@ def _postprocess_results(results):
     :return:
     :rtype List[Dict]:
     '''
+    corrupted_results = []
+
     for result in results:
         for key, value in result.items():
             try:
                 result[key] = int(value)
             except (ValueError, TypeError):
                 pass
-        try:
+
+    for result in results:
+        if 'AB' not in result.keys() or 'TI' not in result.keys():
+            corrupted_results.append(result)
+        else:
             result['abstract'] = result['AB']
             result['title'] = result['TI']
-            del result['AB']
-            del result['TI']
-        except KeyError:
-            pass
+
+    # Remove results which have no title or no abstract
+    results = [result for result in results if result not in corrupted_results]
 
     return results
 
