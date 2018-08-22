@@ -27,6 +27,14 @@ def _postprocess_results(results):
                 result[key] = int(value)
             except (ValueError, TypeError):
                 pass
+        try:
+            result['abstract'] = result['AB']
+            result['title'] = result['TI']
+            del result['AB']
+            del result['TI']
+        except KeyError:
+            pass
+
     return results
 
 
