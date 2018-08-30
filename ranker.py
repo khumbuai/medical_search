@@ -6,8 +6,26 @@ from gensim.models.fasttext import FastText
 from utils import preprocess
 import numpy as np
 import nltk
+from nltk.corpus import stopwords
 
 ft_model = FastText.load('models/ft/med_model_dim300_win5_min100.bin')
+stops = set(stopwords.words('english'))
+
+def _remove_stopwords(sentence):
+    """
+
+    :param sentence: list of words
+    :return: list of words
+    """
+    if isinstance(sentence, list):
+        return [word for word in sentence if not word in stops]
+
+    else:
+        sentence = sentence.split()
+        sentence = [word for word in sentence if not word in stops]
+        sentence = ' '.join(sentence)
+        return sentence
+
 
 
 def similarity(w1, w2):
@@ -24,7 +42,7 @@ def similarity(w1, w2):
     return sim
 
 
-def get_abstract_similarity(query, abstract_tokens, topn=5):
+def get_abstract_similarity(query, abstract_tokens, topn=10):
     """
 
     :param query: string
@@ -49,10 +67,12 @@ def rank_by_semantic_relevance(query, list_of_dictionaries):
 
     query = preprocess(query)  # to be consistent with ft training
 
-    titles = [preprocess(item['title']) for item in list_of_dictionaries]
+    titles = [preprocess(item['TI']) for item in list_of_dictionaries]
+    titles = [_remove_stopwords(title) for title in titles]
     title_similarities = np.array([similarity(query, title) for title in titles])
 
-    abstracts = [nltk.word_tokenize(preprocess(item['abstract'])) for item in list_of_dictionaries]
+    abstracts = [nltk.word_tokenize(preprocess(item['AB'])) for item in list_of_dictionaries]
+    abstracts = [_remove_stopwords(abstract) for abstract in abstracts]
     abstract_similarities = np.array([get_abstract_similarity(query, abstract_tokens) for abstract_tokens in abstracts])
 
     total_similarities = w[0] * title_similarities + w[1] * abstract_similarities
@@ -75,8 +95,8 @@ if __name__ == '__main__':
     a2 = 'Cancer is a group of diseases involving abnormal cell growth with the potential to invade or spread to other parts of the body.[2][8] These contrast with benign tumors, which do not spread to other parts of the body.[8] Possible signs and symptoms include a lump, abnormal bleeding, prolonged cough, unexplained weight loss and a change in bowel movements.[1] While these symptoms may indicate cancer, they may have other causes.[1] Over 100 types of cancers affect humans.[8]'
     a3 = 'Canids are found on all continents except Antarctica, having arrived independently or accompanied human beings over extended periods of time. Canids vary in size from the 2-m-long (6 ft 7 in) gray wolf to the 24-cm-long (9.4 in) fennec fox. The body forms of canids are similar, typically having long muzzles, upright ears, teeth adapted for cracking bones and slicing flesh, long legs, and bushy tails. They are mostly social animals, living together in family units or small groups and behaving cooperatively. Typically, only the dominant pair in a group breeds, and a litter of young is reared annually in an underground den. Canids communicate by scent signals and by vocalizations. They are very intelligent. One canid, the domestic dog, long ago entered into a partnership with humans and today remains one of the most widely kept domestic animals.'
 
-    list_of_dictionaries = [{'title': 'i have cancer', 'abstract': a1}, {'title': 'i love dogs', 'abstract': a3},
-                            {'title': 'i hate cancers', 'abstract': a2}]
+    list_of_dictionaries = [{'TI': 'i have cancer', 'AB': a1}, {'TI': 'i love dogs', 'AB': a3},
+                            {'TI': 'i hate cancers', 'AB': a2}]
     query = 'something about cancer'
 
     ranked_list_of_dictionaries = rank_by_semantic_relevance(query, list_of_dictionaries)
